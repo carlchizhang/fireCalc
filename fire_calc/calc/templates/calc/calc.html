@@ -10,7 +10,7 @@
     <p>When can I retire?</p>
     <form action="{% url 'calc:calc-pre' %}" method="post">
     {% csrf_token %}
-    Annual Addition: <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0">
+    Annual Addition: <input type="number" name="annual-addition" value="{{ params.annual_addition }}">
     Target Amount: <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0">
     Stock &#37;: <input type="number" name="stock-percentage" value="{{ params.stock_percentage }}" min="0" max="100">
     Bond &#37;: <input type="number" name="bond-percentage" value="{{ params.bond_percentage }}" min="0" max="100">
