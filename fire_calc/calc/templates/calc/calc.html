@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+</head>
+
+<body>
+<h1>Welcome to the FIRE Calculator!</h1>
+<div id="pre">
+    <p>When can I retire?</p>
+    <form action="{% url 'calc:calc-pre' %}" method="post">
+    {% csrf_token %}
+    Annual Addition: <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0">
+    Target Amount: <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0">
+    Stock &#37;: <input type="number" name="stock-percentage" value="{{ params.stock_percentage }}" min="0" max="100">
+    Bond &#37;: <input type="number" name="bond-percentage" value="{{ params.bond_percentage }}" min="0" max="100">
+    Cash &#37;: <input type="number" name="cash-percentage" value="{{ params.cash_percentage }}" min="0" max="100">
+    <input type="submit" value="Run Simulations">
+    </form>
+</div>
+
+<div id="post">
+    <p>Post-retirement</p>
+</div>
+
+</body>
+</html>
