@@ -88,17 +88,24 @@ def generate_bond_percent():
     gen = random.randint(0, len(bonds_rand_percent) - 1)
     return bonds_rand_percent[gen]
 
-def simulate_portfolio(start_amount, change, period, stock_percent=60, bond_percent=40):
+def simulate_pre_portfolio(start_amount, annual_addition, target_amount, stock_percent, bond_percent):
     cash_percent = 100 - stock_percent - bond_percent
     portfolio = [start_amount]
+    stats = {}
+    years_taken = float("inf")
+    period = 80
     for i in range(period):
         stock_change = generate_stock_percent()
         bond_change = generate_bond_percent()
         cur_portfolio = portfolio[-1]
         next_portfolio = cur_portfolio * stock_percent/100 * (1 + stock_change/100) + \
                         cur_portfolio * bond_percent/100 * (1 + bond_change/100) + \
-                        cur_portfolio * cash_percent/100
+                        cur_portfolio * cash_percent/100 + annual_addition
 
-        portfolio.append(next_portfolio + change)
+        if years_taken > 80 and next_portfolio > target_amount:
+            years_taken = i
+        portfolio.append(next_portfolio)
 
-    return portfolio
+    stats['years_taken'] = years_taken
+    stats['portfolio'] = portfolio
+    return stats
