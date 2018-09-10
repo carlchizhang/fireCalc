@@ -46,7 +46,7 @@ def calc_pre(request):
     sims_count = 10000
     failed = 0
     for i in range(sims_count):
-        portfolio = apps.simulate_portfolio(1000000, params['annual_addition'], 20)
+        portfolio = apps.simulate_portfolio(params['target_amount'], params['annual_addition'], 40)
         end_vals.append(portfolio[-1])
         if portfolio[-1] < 0:
             failed += 1
@@ -54,7 +54,7 @@ def calc_pre(request):
 
     #plt.show()
     plt.hist(end_vals, 50, rwidth=0.8)
-    plt.show()
+    #plt.show()
     print('mean:', np.mean(end_vals))
     print('fail rate: %f%%' % (failed/sims_count * 100))
     print("Done simulations")

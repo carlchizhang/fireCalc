@@ -6,7 +6,6 @@ import csv, os
 import numpy as np
 import math, random
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 
 class CalcConfig(AppConfig):
     name = 'calc'
