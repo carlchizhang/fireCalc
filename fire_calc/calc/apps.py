@@ -13,72 +13,92 @@ class CalcConfig(AppConfig):
         print("Hello World")
         ready_data()
 
-sp500_data = {}
 SP500_BIN_START = -50.0
 SP500_BIN_RANGE = 10.0
+sp500_rand_percent = []
+bonds_rand_percent = []
 def ready_data():
     file_dir = os.path.dirname(__file__)
 
-    sp500path = os.path.join(file_dir, "data/sp500.csv")
-    with open(sp500path, newline='') as csvfile:
+    #process stock historical prices
+    sp500_path = os.path.join(file_dir, "data/sp500.csv")
+    with open(sp500_path, newline='') as csvfile:
         read_csv = csv.reader(csvfile, delimiter=',')
-
-        sp500_start = 0
         sp500 = []
-        sp500_percent = [0]
-
         for row in read_csv:
             sp500.append(float(row[1]))
-            sp500_start = row[0]
         sp500.reverse()
-        sp500_data['years'] = len(sp500)
 
+        sp500_percent = [0]
         for i in range(len(sp500)):
             if i != 0:
                 percent_change = (sp500[i]/sp500[i-1] - 1) * 100
                 sp500_percent.append(percent_change)
 
-        # print(sp500)
-        #print(sp500_percent)
-        # print(sp500_start)
-        # print(len(sp500))
-
-        #generate histogram
-        #print(min(sp500_percent), max(sp500_percent))
-        hist, bins = np.histogram(sp500_percent, bins=10, range=(-50, 50))
-        sp500_data['hist'] = hist
-        #print(hist)
-        #print(bins)
-        sp500_rand_percent = []
-        for i in range(10000):
-            gen = random.randint(1, sp500_data['years'])
+        #print(min(sp500_percent), max(sp500_percent), np.mean(sp500_percent))
+        hist, bins = np.histogram(sp500_percent, bins=10)
+        sp500_rand_percent.clear()
+        for i in range(50000):
+            gen = random.randint(1, len(sp500))
             bin_num = 0
-            hist = sp500_data['hist']
             while gen > 0:
                 gen -= hist[bin_num]
                 bin_num += 1
             bin_num -= 1
-            bin_start = bin_num * 10 - 50
-            percent = bin_start + random.random() * 10
+            bin_start = bins[bin_num]
+            bin_end = bins[bin_num + 1]
+            percent = bin_start + random.random() * (bin_end - bin_start)
+            #print(percent)
             sp500_rand_percent.append(percent)
-        # plt.hist(sp500_rand_percent, 50)
+        print(min(sp500_rand_percent), max(sp500_rand_percent), np.mean(sp500_rand_percent))
+
+    bonds_path = os.path.join(file_dir, "data/bonds.csv")
+    with open(bonds_path, newline='') as csvfile:
+        read_csv = csv.reader(csvfile, delimiter=',')
+        bonds_yield = []
+        for row in read_csv:
+            bonds_yield.append(float(row[1]))
+        bonds_yield.reverse()
+        #print(min(bonds_yield), max(bonds_yield), np.mean(bonds_yield))
+        hist, bins = np.histogram(bonds_yield, bins=10)
+        # plt.hist(bonds_yield, bins=10)
         # plt.show()
-        sp500_data['percents'] = sp500_rand_percent
-        print("Finished setting up s&p500 data")
+        bonds_rand_percent.clear()
+        for i in range(50000):
+            gen = random.randint(1, len(bonds_yield))
+            bin_num = 0
+            while gen > 0:
+                gen -= hist[bin_num]
+                bin_num += 1
+            bin_num -= 1
+            bin_start = bins[bin_num]
+            bin_end = bins[bin_num + 1]
+            percent = bin_start + random.random() * (bin_end - bin_start)
+            bonds_rand_percent.append(percent)
+        print(min(bonds_rand_percent), max(bonds_rand_percent), np.mean(bonds_rand_percent))
 
-def generate_sp500_percent(inflation=False):
-    gen = random.randint(0, len(sp500_data['percents']) - 1)
-    return sp500_data['percents'][gen]
+    print("Finished setting up s&p500 data")
 
-def simulate_portfolio(start_amount, change, period):
-    S = start_amount
-    T = period
-    C = change
-    portfolio = [S]
-    percents = [0]
-    for i in range(T):
-        year_change = generate_sp500_percent()
-        portfolio.append(portfolio[-1] * (1 + year_change/100) + change)
-        percents.append(year_change)
+
+def generate_stock_percent():
+    gen = random.randint(0, len(sp500_rand_percent) - 1)
+    return sp500_rand_percent[gen]
+
+def generate_bond_percent():
+    gen = random.randint(0, len(bonds_rand_percent) - 1)
+    return bonds_rand_percent[gen]
+
+def simulate_portfolio(start_amount, change, period, stock_percent=60, bond_percent=40):
+    cash_percent = 100 - stock_percent - bond_percent
+    portfolio = [start_amount]
+    for i in range(period):
+        stock_change = generate_stock_percent()
+        bond_change = generate_bond_percent()
+        cur_portfolio = portfolio[-1]
+        next_portfolio = cur_portfolio * stock_percent/100 * (1 + stock_change/100) + \
+                        cur_portfolio * bond_percent/100 * (1 + bond_change/100) + \
+                        cur_portfolio * cash_percent/100
+
+        portfolio.append(next_portfolio + change)
 
     return portfolio

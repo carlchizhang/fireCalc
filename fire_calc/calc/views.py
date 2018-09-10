@@ -46,7 +46,7 @@ def calc_pre(request):
     sims_count = 10000
     failed = 0
     for i in range(sims_count):
-        portfolio = apps.simulate_portfolio(params['target_amount'], params['annual_addition'], 40)
+        portfolio = apps.simulate_portfolio(params['target_amount'], params['annual_addition'], 40, params['stock_percentage'], params['bond_percentage'])
         end_vals.append(portfolio[-1])
         if portfolio[-1] < 0:
             failed += 1
