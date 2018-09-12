@@ -7,12 +7,11 @@ from . import apps
 
 #simulation helpers
 import numpy as np
-import matplotlib.pyplot as plt
 import random
 
 parameters = {
-    'initial_amount': 400000,
-    'annual_addition': 25000,
+    'initial_amount': 0,
+    'annual_addition': 40000,
     'target_amount': 1000000,
     'stock_percentage': 60.0,
     'bond_percentage': 38.0,
@@ -33,13 +32,21 @@ def calc(request):
         pre_graph_data = request.session['pre_dataset']
         del request.session['pre_dataset']
     #print(pre_graph_data)
-    return render(request, 'calc/calc.html', {'params': params, 'pre_graph_data': pre_graph_data})
+
+    pre_simulation_stats = None
+    if 'pre_stats' in request.session:
+        pre_simulation_stats = request.session['pre_stats']
+        del request.session['pre_stats']
+
+    return render(request, 'calc/calc.html', {'params': params, 'pre_graph_data': pre_graph_data, 'pre_simulation_stats': pre_simulation_stats})
 
 # About page for the calc
 def about(request):
     return HttpResponse('Welcome to the about page')
 
 def calc_pre(request):
+    if request.method != 'POST':
+        return HttpResponseRedirect(reverse('calc:calc'))
     #set session params from POST
     params = None
     if 'params' in request.session:
@@ -58,15 +65,26 @@ def calc_pre(request):
     print('starting simulations')
     end_vals = []
     year_vals = []
+    portfolios_store = []
 
-    sims_count = 1000
+    sims_count = 10000
     years_to_sim = 40
+    stats_period = 5
 
     dataset = {
         'portfolios': [],
+        'stats': {
+            'target': params['target_amount'],
+            'success_rates': [],
+            'means': [],
+        },
+        'histogram': {
+            'years': [],
+            'bins': [],
+        }
     }
     for i in range(sims_count):
-        stats = apps.simulate_pre_portfolio(
+        results = apps.simulate_pre_portfolio(
             params['initial_amount'],
             params['annual_addition'],
             params['target_amount'],
@@ -74,18 +92,33 @@ def calc_pre(request):
             params['stock_percentage'],
             params['bond_percentage']
         )
-        end_vals.append(stats['portfolio'][-1])
-        dataset['portfolios'].append(stats['portfolio'])
-        if stats['years_taken'] != float('inf'):
-            year_vals.append(stats['years_taken'])
+        end_vals.append(results['portfolio'][-1])
+        if i % 100 == 0:
+            dataset['portfolios'].append(results['portfolio'])
+        portfolios_store.append(results['portfolio'])
+
+        if results['years_taken'] != float('inf'):
+            year_vals.append(results['years_taken'])
 
     request.session['pre_dataset'] = dataset
-    #plt.show()
-    #print(year_vals)
-    #plt.hist(year_vals, 10, rwidth=0.8)
-    #plt.show()
-    print('mean years to target:', np.mean(year_vals))
-    print('success rate:', len(year_vals)/len(end_vals) * 100)
+
+    #process stats
+    dataset['stats']['means'] = [round(np.mean(i), 0) for i in zip(*portfolios_store)]
+    def calc_success_rate(i):
+        return round(sum(k > params['target_amount'] for k in i)/sims_count * 100, 2)
+    dataset['stats']['success_rates'] = [calc_success_rate(i) for i in zip(*portfolios_store)]
+
+    hist, bins = np.histogram(year_vals, (max(year_vals) - min(year_vals)))
+    dataset['histogram']['years'] = hist.tolist()
+    dataset['histogram']['bins'] = bins.tolist()
+
+    simu_stats = {
+        'mean_years': round(np.mean(year_vals), 2),
+        'simulation_count': sims_count,
+    }
+    request.session['pre_stats'] = simu_stats
+    #print(type(bins))
+
     print('Done simulations')
     request.session.modified = True
     return HttpResponseRedirect(reverse('calc:calc'))

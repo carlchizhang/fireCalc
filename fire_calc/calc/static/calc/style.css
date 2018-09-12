@@ -1,7 +1,53 @@
-.hide {
-    visibility: hidden;
+body {
+    margin: 0;
+    padding: 0;
 }
 
-.show {
-    visibility: visible;
+* {
+    font-family: 'Helvetica Neue', 'Roboto', sans-serif;
+}
+
+div#nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 14px;
+    background-color: #3e95cd;
+    color: white;
+    box-shadow: 0 1px 1px 1px #888888;
+}
+
+div#nav-links {
+    display: flex;
+}
+
+div#nav-links p{
+    margin-left: 14px;
+}
+
+div#content {
+    padding: 14px 28px;
+}
+
+div.hide {
+    display: none;
+}
+
+#pre-form span{
+    padding: 7px;
+}
+
+canvas {
+    max-width: 1200px;
+}
+
+p#pre-link {
+    cursor: pointer;
+}
+
+p#post-link {
+    cursor: pointer;
+}
+
+p#page-title {
+    font-weight: bold;
 }

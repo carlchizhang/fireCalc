@@ -12,31 +12,52 @@
             var pre_graph_data = null
         {% endif %}
     </script>
+    <script src="{% static 'calc/utils.js' %}"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{% static 'calc/style.css' %}">
 </head>
 
 <body>
-<h1>Welcome to the FIRE Monte Carlo Simulator</h1>
-<div id="pre">
-    <p>When can I retire?</p>
-
-    <form action="{% url 'calc:calc-pre' %}" method="post">
-    {% csrf_token %}
-    Initial Amount: <input type="number" name="initial-amount" value="{{ params.initial_amount }}" min="0">
-    Annual Addition: <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0">
-    Target Amount: <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0">
-    Stock &#37;: <input type="number" name="stock-percentage" value="{{ params.stock_percentage }}" min="0" max="100">
-    Bond &#37;: <input type="number" name="bond-percentage" value="{{ params.bond_percentage }}" min="0" max="100">
-    Cash &#37;: <input type="number" name="cash-percentage" value="{{ params.cash_percentage }}" min="0" max="100">
-    <input type="submit" value="Run Simulations">
-    </form>
-
-    <canvas id="pre-chart0" width="800" max-height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}"></canvas>
-    <script src="{% static 'calc/custom-charts.js' %}"></script>
+<div id="nav">
+    <p id="page-title">Simple FIRE Monte Carlo Portfolio Simulator</p>
+    <div id="nav-links">
+        <p id="pre-link" onclick="showPre();">When Can I Retire?</p>
+        <p id="post-link" onclick="showPost();">Will My Money Last?</p>
+    </div>
 </div>
 
-<div id="post">
-    <p>Post-retirement</p>
+<div id="content">
+    <div id="pre">
+        <h1>How Long Until I Can Retire?</h1>
+        <form id="pre-form" action="{% url 'calc:calc-pre' %}" method="post">
+        {% csrf_token %}
+        <span>Starting Amount ($): <input type="number" name="initial-amount" value="{{ params.initial_amount }}" min="0"></span>
+        <span>Annual Addition ($): <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0"></span>
+        <span>Target Amount ($): <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0"></span>
+        <p/>
+        <span>Stock Allocation (&#37;): <input type="number" name="stock-percentage" value="{{ params.stock_percentage }}" min="0" max="100"></span>
+        <span>Bond Allocation (&#37;): <input type="number" name="bond-percentage" value="{{ params.bond_percentage }}" min="0" max="100"></span>
+        <span>Cash Allocation (&#37;): <input type="number" name="cash-percentage" value="{{ params.cash_percentage }}" min="0" max="100"></span>
+        <p/>
+        <span><input type="submit" value="Run Simulations"></span>
+        </form>
+        {% if pre_simulation_stats %}
+            <p/>
+            <p>{{ pre_simulation_stats.simulation_count }} Monte Carlo portfolio simulations were run using historical data.</p>
+            <p>The average year for a portfolio to reach target amount is {{ pre_simulation_stats.mean_years }} years.</p>
+        {% endif %}
+        <canvas id="pre-chart0" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
+        </canvas>
+        <canvas id="pre-chart1" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
+        </canvas>
+    </div>
+
+    <div class="hide" id="post">
+        <p>Will my money last?</p>
+    </div>
 </div>
 
 </body>
+
+<script src="{% static 'calc/custom-charts.js' %}"></script>
 </html>
