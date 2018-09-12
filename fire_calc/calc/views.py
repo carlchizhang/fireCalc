@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import redirect
+from django.contrib import messages
 import json
 from . import apps
 
@@ -44,8 +45,18 @@ def calc(request):
 def about(request):
     return HttpResponse('Welcome to the about page')
 
-def calc_pre(request):
+def pre_form_validate_input(request):
     if request.method != 'POST':
+        return ''
+    data = request.POST
+    if float(request.POST['stock-percentage']) + float(request.POST['bond-percentage']) + float(request.POST['cash-percentage']) > 100:
+        return False
+    return 'valid'
+
+def calc_pre(request):
+    validate = pre_form_validate_input(request)
+    if validate != 'valid':
+        request.session['error'] = validate
         return HttpResponseRedirect(reverse('calc:calc'))
     #set session params from POST
     params = None

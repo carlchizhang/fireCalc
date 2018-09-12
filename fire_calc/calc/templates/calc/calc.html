@@ -31,9 +31,9 @@
         <h1>How Long Until I Can Retire?</h1>
         <form id="pre-form" action="{% url 'calc:calc-pre' %}" method="post">
         {% csrf_token %}
-        <span>Starting Amount ($): <input type="number" name="initial-amount" value="{{ params.initial_amount }}" min="0"></span>
-        <span>Annual Addition ($): <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0"></span>
-        <span>Target Amount ($): <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0"></span>
+        <span>Starting Amount ($): <input type="number" name="initial-amount" value="{{ params.initial_amount }}" min="-1000000" max="10000000"></span>
+        <span>Annual Addition ($): <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0" max="10000000"></span>
+        <span>Target Amount ($): <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0" max="100000000"></span>
         <p/>
         <span>Stock Allocation (&#37;): <input type="number" name="stock-percentage" value="{{ params.stock_percentage }}" min="0" max="100"></span>
         <span>Bond Allocation (&#37;): <input type="number" name="bond-percentage" value="{{ params.bond_percentage }}" min="0" max="100"></span>
