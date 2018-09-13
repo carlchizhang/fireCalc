@@ -7,16 +7,16 @@ import numpy as np
 import math, random
 import matplotlib.pyplot as plt
 
+SP500_BIN_START = -50.0
+SP500_BIN_RANGE = 10.0
+sp500_rand_percent = []
+bonds_rand_percent = []
 class CalcConfig(AppConfig):
     name = 'calc'
     def ready(self):
         print("Hello World")
         ready_data()
 
-SP500_BIN_START = -50.0
-SP500_BIN_RANGE = 10.0
-sp500_rand_percent = []
-bonds_rand_percent = []
 def ready_data():
     file_dir = os.path.dirname(__file__)
 
@@ -88,25 +88,48 @@ def generate_bond_percent():
     gen = random.randint(0, len(bonds_rand_percent) - 1)
     return bonds_rand_percent[gen]
 
-def simulate_pre_portfolio(start_amount, annual_addition, target_amount, years_to_sim, stock_percent, bond_percent):
-    cash_percent = 100 - stock_percent - bond_percent
-    portfolio = [start_amount]
+def simulate_pre_portfolio(starting, addition, target, period, stock, bond):
+    cash = 100 - stock - bond
+    portfolio = [starting]
     stats = {}
     years_taken = float("inf")
-    for i in range(years_to_sim):
+    for i in range(period):
         stock_change = generate_stock_percent()
         bond_change = generate_bond_percent()
         cur_portfolio = portfolio[-1]
-        next_portfolio = cur_portfolio * stock_percent/100 * (1 + stock_change/100) + \
-                        cur_portfolio * bond_percent/100 * (1 + bond_change/100) + \
-                        cur_portfolio * cash_percent/100 + annual_addition
+        next_portfolio = cur_portfolio * stock/100 * (1 + stock_change/100) + \
+                        cur_portfolio * bond/100 * (1 + bond_change/100) + \
+                        cur_portfolio * cash/100 + addition
 
         next_portfolio = int(round(next_portfolio))
         #print(next_portfolio)
-        if years_taken > years_to_sim and next_portfolio > target_amount:
+        if years_taken > period and next_portfolio > target:
             years_taken = i
         portfolio.append(next_portfolio)
 
     stats['years_taken'] = years_taken
+    stats['portfolio'] = portfolio
+    return stats
+
+def simulate_post_portfolio(starting, withdrawal, period, stock, bond):
+    cash = 100 - stock - bond
+    portfolio = [starting]
+    stats = {}
+    years_survived = float("inf")
+    for i in range(period):
+        stock_change = generate_stock_percent()
+        bond_change = generate_bond_percent()
+        cur_portfolio = portfolio[-1]
+        next_portfolio = cur_portfolio * stock/100 * (1 + stock_change/100) + \
+                        cur_portfolio * bond/100 * (1 + bond_change/100) + \
+                        cur_portfolio * cash/100 - withdrawal
+        next_portfolio = int(round(next_portfolio))
+        if years_survived > period and next_portfolio <= 0:
+            years_survived = i
+        if next_portfolio < 0:
+            next_portfolio = 0
+        portfolio.append(next_portfolio)
+
+    stats['years_survived'] = years_survived
     stats['portfolio'] = portfolio
     return stats

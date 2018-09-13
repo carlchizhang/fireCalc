@@ -3,6 +3,7 @@ function showPre() {
   pre.className="show"
   let post = document.getElementById("post")
   post.className="hide"
+  //console.log('Showing pre-retirement')
 }
 
 function showPost() {
@@ -10,4 +11,5 @@ function showPost() {
   pre.className="hide"
   let post = document.getElementById("post")
   post.className="show"
+  //console.log('Showing post-retirement')
 }

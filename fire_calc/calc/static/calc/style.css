@@ -32,7 +32,7 @@ div.hide {
     display: none;
 }
 
-#pre-form span{
+span{
     padding: 7px;
 }
 
@@ -50,4 +50,8 @@ p#post-link {
 
 p#page-title {
     font-weight: bold;
+}
+
+p.errors {
+    color: red;
 }

@@ -5,14 +5,19 @@
 
 <head>
     <script src="{% static 'calc/Chart.js' %}"></script>
+    <script src="{% static 'calc/utils.js' %}"></script>
     <script type="text/javascript">
         {% if pre_graph_data %}
             var pre_graph_data = {{ pre_graph_data|safe }}
         {% else %}
             var pre_graph_data = null
         {% endif %}
+        {% if post_graph_data %}
+            var post_graph_data = {{ post_graph_data|safe }}
+        {% else %}
+            var post_graph_data = null
+        {% endif %}
     </script>
-    <script src="{% static 'calc/utils.js' %}"></script>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{% static 'calc/style.css' %}">
 </head>
@@ -27,37 +32,90 @@
 </div>
 
 <div id="content">
+    {% if messages %}
+        {% for message in messages %}
+            <p class="errors">Error: {{ message }}</p>
+        {% endfor %}
+    {% endif %}
+
     <div id="pre">
         <h1>How Long Until I Can Retire?</h1>
+
         <form id="pre-form" action="{% url 'calc:calc-pre' %}" method="post">
         {% csrf_token %}
-        <span>Starting Amount ($): <input type="number" name="initial-amount" value="{{ params.initial_amount }}" min="-1000000" max="10000000"></span>
-        <span>Annual Addition ($): <input type="number" name="annual-addition" value="{{ params.annual_addition }}" min="0" max="10000000"></span>
-        <span>Target Amount ($): <input type="number" name="target-amount" value="{{ params.target_amount }}" min="0" max="100000000"></span>
+        <span>Starting Amount ($): <input type="number" name="starting" value="{{ pre_params.starting }}" min="-1000000" max="10000000"></span>
+        <span>Annual Addition ($): <input type="number" name="addition" value="{{ pre_params.addition }}" min="0" max="10000000"></span>
+        <span>Target Amount ($): <input type="number" name="target" value="{{ pre_params.target }}" min="0" max="1000000000"></span>
         <p/>
-        <span>Stock Allocation (&#37;): <input type="number" name="stock-percentage" value="{{ params.stock_percentage }}" min="0" max="100"></span>
-        <span>Bond Allocation (&#37;): <input type="number" name="bond-percentage" value="{{ params.bond_percentage }}" min="0" max="100"></span>
-        <span>Cash Allocation (&#37;): <input type="number" name="cash-percentage" value="{{ params.cash_percentage }}" min="0" max="100"></span>
+        <span>Stock Allocation (&#37;): <input type="number" name="stock" value="{{ pre_params.stock }}" min="0" max="100"></span>
+        <span>Bond Allocation (&#37;): <input type="number" name="bond" value="{{ pre_params.bond }}" min="0" max="100"></span>
         <p/>
         <span><input type="submit" value="Run Simulations"></span>
         </form>
+
         {% if pre_simulation_stats %}
             <p/>
             <p>{{ pre_simulation_stats.simulation_count }} Monte Carlo portfolio simulations were run using historical data.</p>
-            <p>The average year for a portfolio to reach target amount is {{ pre_simulation_stats.mean_years }} years.</p>
+            <p>The simulation period is {{ pre_simulation_stats.simulation_years }} years.</p>
+            {% if pre_simulation_stats.mean_years %}
+                <p>The average year for a portfolio to reach target amount is {{ pre_simulation_stats.mean_years }} years.</p>
+            {% else %}
+                <p>No portfolios reached the target amount in the simulation period.</p>
+            {% endif %}
         {% endif %}
-        <canvas id="pre-chart0" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
+
+        <canvas id="pre-chart0" width="1200" height="800" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
         </canvas>
-        <canvas id="pre-chart1" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
-        </canvas>
+        {% if pre_simulation_stats and pre_simulation_stats.mean_years %}
+            <canvas id="pre-chart1" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
+            </canvas>
+        {% endif %}
     </div>
 
     <div class="hide" id="post">
-        <p>Will my money last?</p>
+        <h1>Will My Money Last Through Retirement?</h1>
+
+        <form id="post-form" action="{% url 'calc:calc-post' %}" method="post">
+        {% csrf_token %}
+        <span>Starting Amount ($): <input type="number" name="starting" value="{{ post_params.starting }}" min="0" max="1000000000"></span>
+        <span>Annual Withdrawal ($): <input type="number" name="withdrawal" value="{{ post_params.withdrawal }}" min="0" max="10000000"></span>
+        <span>Withdrawal Period (Years): <input type="number" name="period" value="{{ post_params.period }}" min="1" max="100"></span>
+        <p/>
+        <span>Stock Allocation (&#37;): <input type="number" name="stock" value="{{ post_params.stock }}" min="0" max="100"></span>
+        <span>Bond Allocation (&#37;): <input type="number" name="bond" value="{{ post_params.bond }}" min="0" max="100"></span>
+        <p/>
+        <span><input type="submit" value="Run Simulations"></span>
+        </form>
+
+        {% if post_simulation_stats %}
+            <p/>
+            <p>{{ post_simulation_stats.simulation_count }} Monte Carlo portfolio simulations were run using historical data.</p>
+            <p>The simulation period is {{ post_simulation_stats.simulation_years }} years.</p>
+            {% if post_simulation_stats.mean_years %}
+                <p>{{ post_simulation_stats.final_failure_rate }}% of portfolios failed in the simulation period.</p>
+                <p>The average year for a portfolio to fail at is in {{ post_simulation_stats.mean_years }} years.</p>
+            {% else %}
+                <p>No portfolios failed in the simulation period.</p>
+            {% endif %}
+        {% endif %}
+
+        <canvas id="post-chart0" width="1200" height="800" style="display:none;{% if post_graph_data %} display:inline;{% endif %}">
+        </canvas>
+        {% if post_simulation_stats and post_simulation_stats.mean_years %}
+            <canvas id="post-chart1" width="1200" height="400" style="display:none;{% if post_graph_data %} display:inline;{% endif %}">
+            </canvas>
+        {% endif %}
     </div>
 </div>
 
 </body>
 
 <script src="{% static 'calc/custom-charts.js' %}"></script>
+<script type="text/javascript">
+    {% if view == 'pre' %}
+        showPre();
+    {% else %}
+        showPost();
+    {% endif %}
+</script>
 </html>
