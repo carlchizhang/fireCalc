@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'zk=c9qk5*vicv7cu-=x$)rfy-b&njl
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get('DJANGO_DEBUG', True))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['shielded-cliffs-66009.herokuapp.com', '127.0.0.1']
 
 
 # Application definition
@@ -71,7 +71,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'fire_calc.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
