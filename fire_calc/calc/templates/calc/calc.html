@@ -4,6 +4,8 @@
 <html lang="en">
 
 <head>
+    <title>Simple FIRE Monte Carlo Portfolio Simulator</title>
+    <meta charset = "UTF-8" />
     <script src="{% static 'calc/Chart.js' %}"></script>
     <script src="{% static 'calc/utils.js' %}"></script>
     <script type="text/javascript">
@@ -41,6 +43,7 @@
     <div id="pre">
         <h1>How Long Until I Can Retire?</h1>
 
+        <div>
         <form id="pre-form" action="{% url 'calc:calc-pre' %}" method="post">
         {% csrf_token %}
         <span>Starting Amount ($): <input type="number" name="starting" value="{{ pre_params.starting }}" min="-1000000" max="10000000"></span>
@@ -50,10 +53,12 @@
         <span>Stock Allocation (&#37;): <input type="number" name="stock" value="{{ pre_params.stock }}" min="0" max="100"></span>
         <span>Bond Allocation (&#37;): <input type="number" name="bond" value="{{ pre_params.bond }}" min="0" max="100"></span>
         <p/>
-        <span><input type="submit" value="Run Simulations"></span>
+        <span><input class="submit-button" type="submit" value="Run Simulations"></span>
         </form>
+        </div>
 
         {% if pre_simulation_stats %}
+            <div>
             <p/>
             <p>{{ pre_simulation_stats.simulation_count }} Monte Carlo portfolio simulations were run using historical data.</p>
             <p>The simulation period is {{ pre_simulation_stats.simulation_years }} years.</p>
@@ -62,19 +67,26 @@
             {% else %}
                 <p>No portfolios reached the target amount in the simulation period.</p>
             {% endif %}
+            </div>
         {% endif %}
 
+        <div>
         <canvas id="pre-chart0" width="1200" height="800" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
         </canvas>
+        </div>
+
         {% if pre_simulation_stats and pre_simulation_stats.mean_years %}
-            <canvas id="pre-chart1" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
-            </canvas>
+        <div>
+        <canvas id="pre-chart1" width="1200" height="400" style="display:none;{% if pre_graph_data %} display:inline;{% endif %}">
+        </canvas>
+        </div>
         {% endif %}
     </div>
 
     <div class="hide" id="post">
         <h1>Will My Money Last Through Retirement?</h1>
 
+        <div>
         <form id="post-form" action="{% url 'calc:calc-post' %}" method="post">
         {% csrf_token %}
         <span>Starting Amount ($): <input type="number" name="starting" value="{{ post_params.starting }}" min="0" max="1000000000"></span>
@@ -84,31 +96,45 @@
         <span>Stock Allocation (&#37;): <input type="number" name="stock" value="{{ post_params.stock }}" min="0" max="100"></span>
         <span>Bond Allocation (&#37;): <input type="number" name="bond" value="{{ post_params.bond }}" min="0" max="100"></span>
         <p/>
-        <span><input type="submit" value="Run Simulations"></span>
+        <span><input class="submit-button" type="submit" value="Run Simulations"></span>
         </form>
+        </div>
 
         {% if post_simulation_stats %}
-            <p/>
-            <p>{{ post_simulation_stats.simulation_count }} Monte Carlo portfolio simulations were run using historical data.</p>
-            <p>The simulation period is {{ post_simulation_stats.simulation_years }} years.</p>
-            {% if post_simulation_stats.mean_years %}
-                <p>{{ post_simulation_stats.final_failure_rate }}% of portfolios failed in the simulation period.</p>
-                <p>The average year for a portfolio to fail at is in {{ post_simulation_stats.mean_years }} years.</p>
-            {% else %}
-                <p>No portfolios failed in the simulation period.</p>
-            {% endif %}
+        <div>
+        <p/>
+        <p>{{ post_simulation_stats.simulation_count }} Monte Carlo portfolio simulations were run using historical data.</p>
+        <p>The simulation period is {{ post_simulation_stats.simulation_years }} years.</p>
+        {% if post_simulation_stats.mean_years %}
+            <p>{{ post_simulation_stats.final_failure_rate }}% of portfolios failed in the simulation period.</p>
+            <p>The average year for a portfolio to fail at is in {{ post_simulation_stats.mean_years }} years.</p>
+        {% else %}
+            <p>No portfolios failed in the simulation period.</p>
+        {% endif %}
+        </div>
         {% endif %}
 
+        <div>
         <canvas id="post-chart0" width="1200" height="800" style="display:none;{% if post_graph_data %} display:inline;{% endif %}">
         </canvas>
+        </div>
+
         {% if post_simulation_stats and post_simulation_stats.mean_years %}
-            <canvas id="post-chart1" width="1200" height="400" style="display:none;{% if post_graph_data %} display:inline;{% endif %}">
-            </canvas>
+        <div>
+        <canvas id="post-chart1" width="1200" height="400" style="display:none;{% if post_graph_data %} display:inline;{% endif %}">
+        </canvas>
+        </div>
         {% endif %}
     </div>
 </div>
 
 </body>
+
+<footer>
+  <p>Data source from historical S&P500 values and <a href="http://www.econ.yale.edu/~shiller/data.htm">Prof. Rober Shiller's bond data.</a>
+</p>
+  <p>Django and Chart.js were used to build this tool. <a href="https://github.com/carlchizhang/fire-calc">Source Code</a></p>
+</footer>
 
 <script src="{% static 'calc/custom-charts.js' %}"></script>
 <script type="text/javascript">
