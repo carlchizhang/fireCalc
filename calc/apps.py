@@ -5,7 +5,6 @@ import csv, os
 #data related packages
 import numpy as np
 import math, random
-import matplotlib.pyplot as plt
 
 SP500_BIN_START = -50.0
 SP500_BIN_RANGE = 10.0
